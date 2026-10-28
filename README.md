@@ -29,6 +29,8 @@ API REST para la gestión de productos, desarrollada con Spring Boot. Incluye au
 
 ## Configuración de la base de datos
 
+Los scripts de creación de tablas están en `database/`: `product_db.sql` y `categories.sql`.
+
 ### 1. Crear la base de datos
 
 ```sql

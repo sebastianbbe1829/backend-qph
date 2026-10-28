@@ -12,7 +12,7 @@
 - `src/main/java/com/example/demo/security/` y `config/SecurityConfig.java`: filtro JWT y configuración de acceso.
 - `src/main/java/com/example/demo/exception/GlobalExceptionHandler.java`: traducción de excepciones a respuestas HTTP.
 - `src/main/resources/application.properties`: configuración local de PostgreSQL, esquema y JWT.
-- `product_db.sql` y `database/categories.sql`: creación de las tablas.
+- `database/product_db.sql` y `database/categories.sql`: creación de las tablas.
 - `src/test/java/com/example/demo/controller/ProductControllerIntegrationTest.java`: pruebas de integración de productos.
 
 ### Angular / frontend
