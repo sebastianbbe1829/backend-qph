@@ -20,7 +20,9 @@ CREATE DATABASE products_db;
 -  Autor:       Stalin Ladino
 -  Fecha:       13-04-2026
 *******************************/
-CREATE TABLE public.products (
+CREATE SCHEMA IF NOT EXISTS qph_prueba;
+
+CREATE TABLE qph_prueba.products (
     id      serial         NOT NULL,
     nombre  varchar(255)   NOT NULL,
     precio  numeric(38, 2) NOT NULL,

@@ -38,7 +38,9 @@ CREATE DATABASE products_db;
 ### 2. Crear la tabla de productos
 
 ```sql
-CREATE TABLE public.products (
+CREATE SCHEMA IF NOT EXISTS qph_prueba;
+
+CREATE TABLE qph_prueba.products (
     id      serial         NOT NULL,
     nombre  varchar(255)   NOT NULL,
     precio  numeric(38, 2) NOT NULL,
@@ -48,7 +50,7 @@ CREATE TABLE public.products (
 );
 ```
 
-> La aplicación tiene `spring.jpa.hibernate.ddl-auto=none`, por lo que las tablas **deben crearse manualmente** antes de arrancar. Los productos se guardan en `public.products` y las categorías en `qph_prueba.categories`; ejecuta también `database/categories.sql` para habilitar la API de categorías.
+> La aplicación tiene `spring.jpa.hibernate.ddl-auto=none` y usa el esquema `qph_prueba`, por lo que las tablas **deben crearse manualmente** antes de arrancar. Productos y categorías se guardan en ese esquema; ejecuta también `database/categories.sql` para habilitar la API de categorías.
 
 ---
 

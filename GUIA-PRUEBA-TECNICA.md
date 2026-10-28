@@ -7,7 +7,7 @@
 - `src/main/java/com/example/demo/controller/`: endpoints REST de productos, categorías y autenticación.
 - `src/main/java/com/example/demo/service/`: lógica de negocio.
 - `src/main/java/com/example/demo/repository/`: acceso a datos con Spring Data JPA.
-- `src/main/java/com/example/demo/entity/`: entidades y mapeo de tablas. Productos usan `public.products`; categorías usan `qph_prueba.categories`.
+- `src/main/java/com/example/demo/entity/`: entidades y mapeo de tablas. Productos y categorías usan el esquema `qph_prueba`.
 - `src/main/java/com/example/demo/dto/`: contratos de entrada y salida; las restricciones de entrada se validan con Jakarta Validation.
 - `src/main/java/com/example/demo/security/` y `config/SecurityConfig.java`: filtro JWT y configuración de acceso.
 - `src/main/java/com/example/demo/exception/GlobalExceptionHandler.java`: traducción de excepciones a respuestas HTTP.
@@ -53,7 +53,7 @@ Invoke-RestMethod -Method Get -Uri 'http://localhost:8080/api/products' -Headers
 3. `JwtAuthFilter` valida el token y establece la autenticación.
 4. El controller recibe y valida el DTO, y delega en el service.
 5. El service aplica la lógica y usa el repository.
-6. JPA consulta PostgreSQL: productos en `public.products`, categorías en `qph_prueba.categories`.
+6. JPA consulta PostgreSQL: productos en `qph_prueba.products` y categorías en `qph_prueba.categories`.
 7. El controller responde con JSON; `GlobalExceptionHandler` convierte errores conocidos a HTTP.
 
 ## Diagnóstico rápido
@@ -64,7 +64,7 @@ Invoke-RestMethod -Method Get -Uri 'http://localhost:8080/api/products' -Headers
 | `400 Bad Request` | Campos requeridos y restricciones como precio positivo o stock no negativo. |
 | `404 Not Found` | ID solicitado y mensaje del handler de recursos inexistentes. |
 | `409 Conflict` al crear categoría | Nombre duplicado, ignorando mayúsculas/minúsculas. |
-| Error SQL de tabla/esquema | Que existan `public.products` y `qph_prueba.categories`; `ddl-auto=none` no crea tablas. |
+| Error SQL de tabla/esquema | Que existan `qph_prueba.products` y `qph_prueba.categories`; `ddl-auto=none` no crea tablas. |
 | La API no inicia | Revisa logs, puerto 8080, URL/credenciales de PostgreSQL y conectividad. |
 
 ## Lista de chequeo
