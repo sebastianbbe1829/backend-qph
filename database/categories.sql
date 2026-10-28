@@ -1,5 +1,7 @@
 -- Ejecutar en la base de datos y esquema usados por la aplicación.
 -- La tabla se crea separada de products: este MVP no cambia la tabla existente.
+CREATE SCHEMA IF NOT EXISTS qph_prueba;
+
 CREATE TABLE IF NOT EXISTS qph_prueba.categories (
     id BIGSERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,

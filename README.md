@@ -48,7 +48,7 @@ CREATE TABLE public.products (
 );
 ```
 
-> La aplicación tiene `spring.jpa.hibernate.ddl-auto=none`, por lo que el esquema **debe crearse manualmente** antes de arrancar.
+> La aplicación tiene `spring.jpa.hibernate.ddl-auto=none`, por lo que las tablas **deben crearse manualmente** antes de arrancar. Los productos se guardan en `public.products` y las categorías en `qph_prueba.categories`; ejecuta también `database/categories.sql` para habilitar la API de categorías.
 
 ---
 
