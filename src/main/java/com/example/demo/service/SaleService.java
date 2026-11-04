@@ -5,5 +5,5 @@ import com.example.demo.dto.SaleResponseDTO;
 
 public interface SaleService {
 
-    SaleResponseDTO createSale(SaleRequestDTO request);
+    SaleResponseDTO createSale(SaleRequestDTO request, String username);
 }

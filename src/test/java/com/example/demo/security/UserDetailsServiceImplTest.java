@@ -1,5 +1,8 @@
 package com.example.demo.security;
 
+import com.example.demo.entity.AppUser;
+import com.example.demo.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -10,17 +13,34 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class UserDetailsServiceImplTest {
 
-    private final UserDetailsServiceImpl userDetailsService = new UserDetailsServiceImpl();
+    private UserRepository userRepository;
+    private UserDetailsServiceImpl userDetailsService;
+
+    @BeforeEach
+    void setUp() {
+        userRepository = mock(UserRepository.class);
+        userDetailsService = new UserDetailsServiceImpl(userRepository);
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        when(userRepository.findByUsername("user")).thenReturn(Optional.of(AppUser.builder()
+                .id(1L).username("user").passwordHash(encoder.encode("user123"))
+                .role("USER").build()));
+        when(userRepository.findByUsername("admin")).thenReturn(Optional.of(AppUser.builder()
+                .id(2L).username("admin").passwordHash(encoder.encode("admin123"))
+                .role("ADMIN").build()));
+    }
 
     @Test
-    void userAccountHasOnlyUserRoleAndUsesBcryptPassword() {
+    void databaseAccountHasEncodedPasswordAndExpectedRole() {
         UserDetails user = userDetailsService.loadUserByUsername("user");
 
         assertAccountRole(user, "user", "ROLE_USER");
@@ -28,7 +48,7 @@ class UserDetailsServiceImplTest {
     }
 
     @Test
-    void adminAccountHasOnlyAdminRole() {
+    void adminAccountHasAdminRole() {
         UserDetails admin = userDetailsService.loadUserByUsername("admin");
 
         assertAccountRole(admin, "admin", "ROLE_ADMIN");

@@ -5,8 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -15,11 +16,9 @@ import java.time.LocalDateTime;
 public class SaleResponseDTO {
 
     private Long saleId;
-    private Long productId;
-    private String productName;
-    private Integer quantity;
-    private BigDecimal unitPrice;
+    private Long userId;
+    private String username;
+    private List<SaleItemResponseDTO> items;
     private BigDecimal total;
-    private Integer remainingStock;
     private LocalDateTime createdAt;
 }
