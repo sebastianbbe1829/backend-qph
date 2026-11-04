@@ -11,23 +11,22 @@ import java.util.Map;
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private static final Map<String, UserDetails> USERS = Map.of(
-            "admin", User.withUsername("admin")
-                    .password("$2a$10$eMSPwJfxqXRuTXFmPRKy2.CvXAMpOQ1q3Wgvc4cOkli9RuOBK5Cge")
-                    .roles("ADMIN")
-                    .build(),
-            "user", User.withUsername("user")
-                    .password("$2a$10$0RJsNuZN7OOjcFfG/MGNIef7iRamr5/1SJBAQbhwLzJ27MsrGlfmW")
-                    .roles("USER")
-                    .build()
+    private static final Map<String, Account> USERS = Map.of(
+            "admin", new Account("$2a$10$eMSPwJfxqXRuTXFmPRKy2.CvXAMpOQ1q3Wgvc4cOkli9RuOBK5Cge", "ADMIN"),
+            "user", new Account("$2a$10$0RJsNuZN7OOjcFfG/MGNIef7iRamr5/1SJBAQbhwLzJ27MsrGlfmW", "USER")
     );
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserDetails user = USERS.get(username);
-        if (user == null) {
+        Account account = USERS.get(username);
+        if (account == null) {
             throw new UsernameNotFoundException("Usuario no encontrado: " + username);
         }
-        return user;
+        return User.withUsername(username)
+                .password(account.encodedPassword())
+                .roles(account.role())
+                .build();
     }
+
+    private record Account(String encodedPassword, String role) {}
 }
