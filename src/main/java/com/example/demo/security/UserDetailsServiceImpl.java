@@ -11,21 +11,23 @@ import java.util.Map;
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    // Password: "admin123" encriptado con BCrypt
-	private static final Map<String, String> USERS = Map.of(
-	        "admin", "$2a$10$eMSPwJfxqXRuTXFmPRKy2.CvXAMpOQ1q3Wgvc4cOkli9RuOBK5Cge"
-	);
+    private static final Map<String, UserDetails> USERS = Map.of(
+            "admin", User.withUsername("admin")
+                    .password("$2a$10$eMSPwJfxqXRuTXFmPRKy2.CvXAMpOQ1q3Wgvc4cOkli9RuOBK5Cge")
+                    .roles("ADMIN")
+                    .build(),
+            "user", User.withUsername("user")
+                    .password("$2a$10$0RJsNuZN7OOjcFfG/MGNIef7iRamr5/1SJBAQbhwLzJ27MsrGlfmW")
+                    .roles("USER")
+                    .build()
+    );
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        String encodedPassword = USERS.get(username);
-        if (encodedPassword == null) {
+        UserDetails user = USERS.get(username);
+        if (user == null) {
             throw new UsernameNotFoundException("Usuario no encontrado: " + username);
         }
-        return User.builder()
-                .username(username)
-                .password(encodedPassword)
-                .roles("ADMIN")
-                .build();
+        return user;
     }
 }
