@@ -47,19 +47,12 @@ Maven se ejecuta mediante el wrapper incluido; no es necesario instalarlo por se
 
 ## Levantar el proyecto desde cero
 
-1. Clona ambos repositorios en carpetas hermanas: `C:\git\backend-qph` y `C:\git\frontend-qph`.
-2. Instala las dependencias del frontend una vez:
+1. Clona ambos repositorios en carpetas hermanas y conserva los nombres `backend-qph` y `frontend-qph`. Puedes elegir la ubicación; por ejemplo, `C:\git\backend-qph` y `C:\git\frontend-qph`.
+2. Inicializa la base vacía y el primer administrador ejecutando `bootstrap_admin_qph.bat` desde la carpeta `backend-qph`. El script crea el esquema de las cuatro tablas si hace falta, pide la contraseña actual de PostgreSQL y solicita el nombre y la contraseña del administrador. Las contraseñas no se muestran. La cuenta se guarda con BCrypt. Solo funciona cuando la tabla de usuarios está vacía; no borra ni reinicia datos existentes.
+3. Cuando la base y el administrador estén listos, ejecuta `iniciar_prueba_qph.bat` desde la carpeta `backend-qph`. El lanzador instala automáticamente las dependencias del frontend con `npm ci` si no están instaladas o si cambió el archivo `package-lock.json`. Luego abre consolas separadas para backend y frontend y abre `/login` en el navegador cuando Angular responde por HTTP.
+4. Inicia sesión con las credenciales de administrador. Desde la aplicación puedes registrar productos y usuarios y probar ventas.
 
-   ```powershell
-   Set-Location C:\git\frontend-qph
-   npm ci
-   ```
-
-3. Inicializa la base vacía y el primer administrador ejecutando `bootstrap_admin_qph.bat` desde `C:\git\backend-qph`. El script crea el esquema de las cuatro tablas si hace falta, pide la contraseña actual de PostgreSQL, y luego solicita el nombre y la contraseña del administrador. Las contraseñas no se muestran. La cuenta se guarda con BCrypt. Solo funciona cuando la tabla de usuarios está vacía; no borra ni reinicia datos existentes.
-4. Cuando el bootstrap termine correctamente, ejecuta `iniciar_prueba_qph.bat` desde `C:\git\backend-qph`. Se abrirán consolas separadas para backend y frontend. Espera hasta cinco minutos por cada servicio; el script abre `/login` en el navegador cuando Angular responde por HTTP.
-5. Inicia sesión con las credenciales de administrador creadas en el paso 3. Desde la aplicación puedes registrar productos y usuarios y probar ventas.
-
-No vuelvas a ejecutar el bootstrap después de crear el administrador. Para los siguientes usos, ejecuta directamente `iniciar_prueba_qph.bat`.
+No vuelvas a ejecutar el bootstrap después de crear el administrador. Para los siguientes usos, ejecuta directamente `iniciar_prueba_qph.bat`; no es necesario ejecutar `npm ci` manualmente.
 
 El esquema es idempotente para esta instalación: se crean las tablas que falten sin vaciar tablas que ya existan. Para preparar manualmente una base PostgreSQL local, crea `products_db`, conecta a esa base y ejecuta `database/schema.sql`.
 

@@ -9,6 +9,36 @@ if (-not (Test-Path (Join-Path $backend 'mvnw.cmd'))) {
 if (-not (Test-Path (Join-Path $frontend 'package.json'))) {
     throw "No se encontró package.json en $frontend"
 }
+$frontendPackageLock = Join-Path $frontend 'package-lock.json'
+if (-not (Test-Path $frontendPackageLock)) {
+    throw "No se encontró package-lock.json en $frontend"
+}
+$npmCommand = Get-Command npm.cmd -ErrorAction SilentlyContinue
+if (-not $npmCommand) {
+    throw 'No se encontró npm.cmd. Instala Node.js y vuelve a ejecutar el lanzador.'
+}
+
+$nodeModules = Join-Path $frontend 'node_modules'
+$installedPackageLock = Join-Path $nodeModules '.package-lock.json'
+$installDependencies = -not (Test-Path $nodeModules) -or -not (Test-Path $installedPackageLock)
+if (-not $installDependencies) {
+    $lockFileTime = (Get-Item $frontendPackageLock).LastWriteTimeUtc
+    $installedLockFileTime = (Get-Item $installedPackageLock).LastWriteTimeUtc
+    $installDependencies = $lockFileTime -gt $installedLockFileTime
+}
+if ($installDependencies) {
+    Write-Host 'Instalando las dependencias del frontend con npm ci...'
+    Push-Location $frontend
+    try {
+        & $npmCommand.Source ci
+        if ($LASTEXITCODE -ne 0) {
+            throw "npm ci terminó con código $LASTEXITCODE"
+        }
+    }
+    finally {
+        Pop-Location
+    }
+}
 
 if ([string]::IsNullOrWhiteSpace($env:DB_URL)) {
     $env:DB_URL = 'jdbc:postgresql://ep-rapid-bird-axslgcz8-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require&currentSchema=qph_prueba'
