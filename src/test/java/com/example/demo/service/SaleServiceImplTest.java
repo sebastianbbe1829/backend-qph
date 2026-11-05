@@ -103,13 +103,13 @@ class SaleServiceImplTest {
         when(productRepository.findByIdForUpdate(99L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> saleService.createSale(
-                new SaleRequestDTO(99L, 1), "user"));
+                new SaleRequestDTO(List.of(new SaleItemRequestDTO(99L, 1))), "user"));
 
         verify(saleRepository, never()).save(any(Sale.class));
     }
 
     @Test
-    void preservesLegacySingleProductRequestShape() {
+    void createsSaleWithSingleItemInTheCurrentRequestShape() {
         when(productRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(keyboard));
         when(saleRepository.save(any(Sale.class))).thenAnswer(invocation -> {
             Sale sale = invocation.getArgument(0);
@@ -117,7 +117,8 @@ class SaleServiceImplTest {
                     .user(sale.getUser()).items(sale.getItems()).build();
         });
 
-        SaleResponseDTO response = saleService.createSale(new SaleRequestDTO(1L, 2), "user");
+        SaleResponseDTO response = saleService.createSale(
+                new SaleRequestDTO(List.of(new SaleItemRequestDTO(1L, 2))), "user");
 
         assertEquals(1, response.getItems().size());
         assertEquals(new BigDecimal("25.00"), response.getTotal());

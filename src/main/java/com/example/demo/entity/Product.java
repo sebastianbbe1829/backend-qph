@@ -29,11 +29,11 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     @NotBlank(message = "El nombre es requerido")
     private String nombre;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 12, scale = 2)
     @NotNull
     @Positive(message = "El precio debe ser positivo")
     private BigDecimal precio;

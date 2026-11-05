@@ -35,7 +35,10 @@ public class SaleServiceImpl implements SaleService {
     @Override
     @Transactional
     public SaleResponseDTO createSale(SaleRequestDTO request, String username) {
-        List<SaleItemRequestDTO> requestedItems = resolveItems(request);
+        List<SaleItemRequestDTO> requestedItems = request.getItems();
+        if (requestedItems == null || requestedItems.isEmpty()) {
+            throw new IllegalArgumentException("La venta debe incluir al menos un producto");
+        }
         AppUser user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
         Map<Long, SaleItemRequestDTO> itemsByProductId = new TreeMap<>();
@@ -80,7 +83,6 @@ public class SaleServiceImpl implements SaleService {
                     .product(product)
                     .quantity(quantity)
                     .unitPrice(unitPrice)
-                    .total(itemTotal)
                     .build());
             responseItems.add(SaleItemResponseDTO.builder()
                     .productId(product.getId())
@@ -104,13 +106,4 @@ public class SaleServiceImpl implements SaleService {
                 .build();
     }
 
-    private List<SaleItemRequestDTO> resolveItems(SaleRequestDTO request) {
-        if (request.getItems() != null && !request.getItems().isEmpty()) {
-            return request.getItems();
-        }
-        if (request.getProductId() != null || request.getQuantity() != null) {
-            return List.of(new SaleItemRequestDTO(request.getProductId(), request.getQuantity()));
-        }
-        throw new IllegalArgumentException("La venta debe incluir al menos un producto");
-    }
 }

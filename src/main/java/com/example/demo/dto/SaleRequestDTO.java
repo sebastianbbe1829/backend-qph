@@ -1,8 +1,7 @@
 package com.example.demo.dto;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,20 +14,9 @@ import java.util.List;
 @AllArgsConstructor
 public class SaleRequestDTO {
 
-    private Long productId;
-
-    private Integer quantity;
-
     @Valid
+    @NotEmpty(message = "La venta debe incluir al menos un producto")
     @Size(max = 100, message = "Una venta no puede contener más de 100 productos")
     private List<SaleItemRequestDTO> items;
 
-    public SaleRequestDTO(Long productId, Integer quantity) {
-        this.productId = productId;
-        this.quantity = quantity;
-    }
-
-    public SaleRequestDTO(List<SaleItemRequestDTO> items) {
-        this.items = items;
-    }
 }

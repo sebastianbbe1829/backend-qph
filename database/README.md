@@ -1,18 +1,21 @@
-# Database setup
+# Esquema de base de datos
 
-The scripts target the existing PostgreSQL schema `qph_prueba`.
+El proyecto inicia con una base vacía y usa cuatro tablas: `users`, `products`, `sales` y `sale_items`.
 
-## Existing database upgrade
+1. Crea la base de datos PostgreSQL `products_db`.
+2. Ejecuta `schema.sql` conectado a esa base.
+3. Configura conexión y secreto JWT mediante variables de entorno.
+4. Inicializa el primer administrador con el procedimiento descrito en el README principal.
 
-Run these scripts in order:
+El script no inserta usuarios, productos ni ventas de demostración. Es para una instalación limpia; no es una migración ni debe ejecutarse encima de una base con datos.
 
-1. `users.sql` creates the user table and inserts the existing demo accounts with BCrypt hashes.
-2. `migrate_sales_to_multi_item.sql` migrates existing sale rows into sale headers and sale items. Old sales keep a null seller because their original seller was not recorded; new sales record the authenticated user.
+## Relaciones y restricciones
 
-The migration keeps the original table as `sales_legacy` for reference. Back up the database before applying it.
+- `sales.user_id` referencia obligatoriamente `users.id`; no se permite borrar un usuario con ventas.
+- `sale_items.sale_id` referencia `sales.id` y sus líneas se borran junto con la venta.
+- `sale_items.product_id` referencia `products.id`; no se permite borrar productos que forman parte del historial.
+- Claves `PRIMARY KEY`, `UNIQUE` y `CHECK` refuerzan la identidad, el nombre de usuario, los roles, los precios positivos, las cantidades positivas y el stock no negativo.
+- La restricción única `(sale_id, product_id)` evita repetir el mismo producto dentro de una venta. La aplicación valida también esa condición para devolver un error legible.
+- No se persiste el total de línea: se calcula a partir de cantidad y precio unitario para evitar valores redundantes que puedan contradecirse.
 
-## New database
-
-Create the `products_db` database from the first statement in `product_db.sql` if needed, connect to that database, then run the schema and product-table statements from that script. Finally run `users.sql` and the new `sales.sql` once each.
-
-Passwords are never stored as plain text in these scripts. New accounts are saved with BCrypt hashes by the user creation endpoint.
+Las ventas registran el usuario, fecha, producto, cantidad y precio unitario histórico. El precio guardado no cambia si luego se actualiza el precio vigente del producto.

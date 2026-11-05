@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,7 +18,14 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "sale_items", schema = "qph_prueba")
+@Table(
+        name = "sale_items",
+        schema = "qph_prueba",
+        uniqueConstraints = @UniqueConstraint(
+                name = "sale_items_sale_product_unique",
+                columnNames = {"sale_id", "product_id"}
+        )
+)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -41,7 +49,4 @@ public class SaleItem {
 
     @Column(name = "unit_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal unitPrice;
-
-    @Column(nullable = false, precision = 14, scale = 2)
-    private BigDecimal total;
 }
