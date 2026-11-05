@@ -18,6 +18,26 @@ import static org.mockito.Mockito.when;
 class UserServiceImplTest {
 
     @Test
+    void listsUsersWithoutExposingPasswordHashes() {
+        UserRepository userRepository = mock(UserRepository.class);
+        UserServiceImpl userService = new UserServiceImpl(
+                userRepository, new BCryptPasswordEncoder());
+        when(userRepository.findAll()).thenReturn(java.util.List.of(
+                AppUser.builder().id(1L).username("admin")
+                        .passwordHash("$2a$hash").role("ADMIN").build(),
+                AppUser.builder().id(2L).username("seller")
+                        .passwordHash("$2a$hash").role("USER").build()));
+
+        var users = userService.findAll();
+
+        assertEquals(2, users.size());
+        assertEquals("admin", users.get(0).getUsername());
+        assertEquals("ADMIN", users.get(0).getRole());
+        assertFalse(users.get(0).toString().contains("passwordHash"));
+        assertFalse(users.get(0).toString().contains("$2a$hash"));
+    }
+
+    @Test
     void createsUserWithHashedPasswordAndDoesNotReturnHash() {
         UserRepository userRepository = mock(UserRepository.class);
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();

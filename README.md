@@ -97,6 +97,7 @@ Después de que la primera cuenta se haya creado, desactiva `APP_BOOTSTRAP_ADMIN
 | Método | Ruta | Acceso | Función |
 |---|---|---|---|
 | `POST` | `/api/auth/login` | Público | Iniciar sesión y obtener JWT |
+| `GET` | `/api/users` | Administrador | Listar usuarios (ID, nombre y rol) |
 | `POST` | `/api/users` | Administrador | Crear usuario |
 | `GET` | `/api/products` | Administrador | Listar productos |
 | `GET` | `/api/products/{id}` | Usuario o administrador | Consultar producto |

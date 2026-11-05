@@ -49,6 +49,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/users").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/sales").hasAnyRole("ADMIN", "USER")
                 .requestMatchers(HttpMethod.GET, "/api/products").hasAnyRole( "ADMIN")

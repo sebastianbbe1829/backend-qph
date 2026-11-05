@@ -9,12 +9,22 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserResponseDTO> findAll() {
+        return userRepository.findAll().stream()
+                .map(this::toResponse)
+                .toList();
+    }
 
     @Override
     @Transactional
@@ -30,6 +40,10 @@ public class UserServiceImpl implements UserService {
                 .role(request.getRole())
                 .build());
 
+        return toResponse(user);
+    }
+
+    private UserResponseDTO toResponse(AppUser user) {
         return UserResponseDTO.builder()
                 .id(user.getId())
                 .username(user.getUsername())
