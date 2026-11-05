@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.demo.entity.Product;
 import com.example.demo.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -98,5 +99,42 @@ class ProductControllerIntegrationTest {
                 .andExpect(jsonPath("$.details.nombre").exists())
                 .andExpect(jsonPath("$.details.precio").exists())
                 .andExpect(jsonPath("$.details.stock").exists());
+    }
+
+    @Test
+    void productListSupportsServerSidePaginationSortingAndSearch() throws Exception {
+        productRepository.saveAll(java.util.List.of(
+                Product.builder().nombre("Teclado").precio(new java.math.BigDecimal("10.00")).stock(5).build(),
+                Product.builder().nombre("Mouse").precio(new java.math.BigDecimal("20.00")).stock(8).build(),
+                Product.builder().nombre("Monitor").precio(new java.math.BigDecimal("30.00")).stock(2).build()));
+
+        mockMvc.perform(get("/api/products")
+                        .param("page", "1")
+                        .param("size", "2")
+                        .param("sort", "nombre")
+                        .param("direction", "DESC"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].nombre").value("Monitor"))
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.size").value(2))
+                .andExpect(jsonPath("$.totalElements").value(3))
+                .andExpect(jsonPath("$.totalPages").value(2))
+                .andExpect(jsonPath("$.last").value(true));
+
+        mockMvc.perform(get("/api/products").param("search", "tecla"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].nombre").value("Teclado"))
+                .andExpect(jsonPath("$.totalElements").value(1));
+    }
+
+    @Test
+    void productListRejectsInvalidPaginationAndSortFields() throws Exception {
+        mockMvc.perform(get("/api/products").param("size", "101"))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(get("/api/products").param("sort", "password"))
+                .andExpect(status().isBadRequest());
     }
 }

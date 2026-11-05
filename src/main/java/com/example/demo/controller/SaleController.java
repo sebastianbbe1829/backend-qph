@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.SaleRequestDTO;
 import com.example.demo.dto.SaleResponseDTO;
 import com.example.demo.service.SaleService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/sales")
+@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 public class SaleController {
 

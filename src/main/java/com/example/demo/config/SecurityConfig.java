@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import com.example.demo.logging.RequestTraceFilter;
 import com.example.demo.security.JwtAuthFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +17,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
@@ -30,14 +33,17 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final RequestTraceFilter requestTraceFilter;
     private final UserDetailsService userDetailsService;
     private final String corsAllowedOrigins;
 
     public SecurityConfig(
             JwtAuthFilter jwtAuthFilter,
+            RequestTraceFilter requestTraceFilter,
             UserDetailsService userDetailsService,
             @Value("${app.cors.allowed-origins:http://localhost:4200}") String corsAllowedOrigins) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.requestTraceFilter = requestTraceFilter;
         this.userDetailsService = userDetailsService;
         this.corsAllowedOrigins = corsAllowedOrigins;
     }
@@ -48,6 +54,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/users").hasRole("ADMIN")
@@ -59,9 +66,18 @@ public class SecurityConfig {
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider())
+            .addFilterBefore(requestTraceFilter, SecurityContextHolderFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public FilterRegistrationBean<RequestTraceFilter> requestTraceFilterRegistration() {
+        FilterRegistrationBean<RequestTraceFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(requestTraceFilter);
+        registration.setEnabled(false);
+        return registration;
     }
 
     @Bean

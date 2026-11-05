@@ -5,11 +5,11 @@ import com.example.demo.dto.UserResponseDTO;
 import com.example.demo.entity.AppUser;
 import com.example.demo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,10 +20,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserResponseDTO> findAll() {
-        return userRepository.findAll().stream()
-                .map(this::toResponse)
-                .toList();
+    public Page<UserResponseDTO> findAll(Pageable pageable, String search) {
+        String normalizedSearch = search == null ? "" : search.trim();
+        Page<AppUser> users = normalizedSearch.isEmpty()
+                ? userRepository.findAll(pageable)
+                : userRepository.findByUsernameContainingIgnoreCaseOrRoleContainingIgnoreCase(
+                        normalizedSearch, normalizedSearch, pageable);
+        return users.map(this::toResponse);
     }
 
     @Override
