@@ -35,15 +35,43 @@ Cada línea conserva su precio de venta para no alterar el historial cuando camb
 
 Consulta [database/README.md](database/README.md) y ejecuta [database/schema.sql](database/schema.sql) solo al crear una instalación nueva.
 
-## Crear la base e iniciar
+## Requisitos
 
-Requisitos: JDK 21, Maven 3.9+ y PostgreSQL 15+.
+- Windows 10/11.
+- JDK 21 en `PATH`.
+- Node.js `^20.19.0`, `^22.12.0` o `>=24.0.0`, y npm (rangos aceptados por Angular CLI 21).
+- Acceso de red a la base PostgreSQL configurada.
+- Puertos locales 8080 (backend) y 4200 (frontend) disponibles.
 
-```sql
-CREATE DATABASE products_db;
-```
+Maven se ejecuta mediante el wrapper incluido; no es necesario instalarlo por separado.
 
-Conecta a `products_db` y ejecuta `database/schema.sql`. Luego configura estas variables de entorno:
+## Levantar el proyecto desde cero
+
+1. Clona ambos repositorios en carpetas hermanas: `C:\git\backend-qph` y `C:\git\frontend-qph`.
+2. Instala las dependencias del frontend una vez:
+
+   ```powershell
+   Set-Location C:\git\frontend-qph
+   npm ci
+   ```
+
+3. Inicializa la base vacía y el primer administrador ejecutando `bootstrap_admin_qph.bat` desde `C:\git\backend-qph`. El script crea el esquema de las cuatro tablas si hace falta, pide la contraseña actual de PostgreSQL, y luego solicita el nombre y la contraseña del administrador. Las contraseñas no se muestran. La cuenta se guarda con BCrypt. Solo funciona cuando la tabla de usuarios está vacía; no borra ni reinicia datos existentes.
+4. Cuando el bootstrap termine correctamente, ejecuta `iniciar_prueba_qph.bat` desde `C:\git\backend-qph`. Se abrirán consolas separadas para backend y frontend. Espera hasta cinco minutos por cada servicio; el script abre `/login` en el navegador cuando Angular responde por HTTP.
+5. Inicia sesión con las credenciales de administrador creadas en el paso 3. Desde la aplicación puedes registrar productos y usuarios y probar ventas.
+
+No vuelvas a ejecutar el bootstrap después de crear el administrador. Para los siguientes usos, ejecuta directamente `iniciar_prueba_qph.bat`.
+
+El esquema es idempotente para esta instalación: se crean las tablas que falten sin vaciar tablas que ya existan. Para preparar manualmente una base PostgreSQL local, crea `products_db`, conecta a esa base y ejecuta `database/schema.sql`.
+
+## Configuración de conexión y secretos
+
+Los scripts usan por defecto el endpoint Neon de este proyecto. El lanzador pide la contraseña de PostgreSQL de forma interactiva; no la escribas en los archivos `.bat`, `.ps1` ni en Git. Puedes establecer `DB_URL` y `DB_USERNAME` antes de iniciar si necesitas otra base o usuario.
+
+Si `JWT_SECRET` no está definido, el lanzador genera una clave temporal. Para conservar sesiones JWT después de reiniciar, define una clave segura y persistente como variable de entorno. La contraseña nueva de Neon se ingresa en el prompt del script; no uses la credencial que fue expuesta previamente.
+
+Si la espera se agota, deja abiertas las consolas y revisa el error original que muestran. Angular se inicia explícitamente en `127.0.0.1:4200` para que su dirección coincida con la comprobación de disponibilidad del lanzador.
+
+La aplicación también puede configurarse directamente con estas variables de entorno:
 
 | Variable | Uso |
 |---|---|
