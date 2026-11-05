@@ -77,7 +77,7 @@ if (-not $backendReady) {
     throw 'El backend no respondio en 5 minutos. Revisa su ventana de consola.'
 }
 
-$frontendCommand = "cd /d `"$frontend`" && call npm.cmd start -- --host 127.0.0.1"
+$frontendCommand = "cd /d `"$frontend`" && call npm.cmd start -- --host localhost"
 Start-Process -FilePath $env:ComSpec -ArgumentList '/k', $frontendCommand -WorkingDirectory $frontend
 
 Write-Host 'Esperando que Angular compile y responda por HTTP (hasta 5 minutos)...'
@@ -89,7 +89,7 @@ while ([DateTime]::UtcNow -lt $frontendDeadline) {
     try {
         $secondsRemaining = [int][Math]::Ceiling(($frontendDeadline - [DateTime]::UtcNow).TotalSeconds)
         $response = Invoke-WebRequest `
-            -Uri 'http://127.0.0.1:4200/login' `
+            -Uri 'http://localhost:4200/login' `
             -TimeoutSec ([Math]::Min(4, $secondsRemaining)) `
             -Proxy $null `
             -UseBasicParsing
@@ -110,12 +110,12 @@ if (-not $frontendReady) {
     throw 'Angular no respondio por HTTP en 5 minutos. Revisa la ventana del frontend.'
 }
 
-Start-Process 'http://127.0.0.1:4200/login'
+Start-Process 'http://localhost:4200/login'
 
 Write-Host ''
 Write-Host 'QPH iniciado:'
 Write-Host '  Backend:  http://localhost:8080'
-Write-Host '  Frontend: http://127.0.0.1:4200/login'
+Write-Host '  Frontend: http://localhost:4200/login'
 if ($generatedJwtSecret) {
     Write-Host 'Nota: la clave JWT se regenerara al cerrar esta ventana; se cerraran las sesiones actuales.'
 }

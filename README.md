@@ -69,7 +69,7 @@ Los scripts usan por defecto el endpoint Neon de este proyecto. El lanzador pide
 
 Si `JWT_SECRET` no está definido, el lanzador genera una clave temporal. Para conservar sesiones JWT después de reiniciar, define una clave segura y persistente como variable de entorno. La contraseña nueva de Neon se ingresa en el prompt del script; no uses la credencial que fue expuesta previamente.
 
-Si la espera se agota, deja abiertas las consolas y revisa el error original que muestran. Angular se inicia explícitamente en `127.0.0.1:4200` para que su dirección coincida con la comprobación de disponibilidad del lanzador.
+Si la espera se agota, deja abiertas las consolas y revisa el error original que muestran. Angular se inicia en `localhost:4200` y el lanzador comprueba esa misma dirección antes de abrir `/login`.
 
 La aplicación también puede configurarse directamente con estas variables de entorno:
 
@@ -78,6 +78,7 @@ La aplicación también puede configurarse directamente con estas variables de e
 | `DB_URL` | URL JDBC; por ejemplo `jdbc:postgresql://localhost:5432/products_db?currentSchema=qph_prueba` |
 | `DB_USERNAME` | Usuario de la base |
 | `DB_PASSWORD` | Contraseña de la base |
+| `APP_CORS_ALLOWED_ORIGINS` | Orígenes frontend separados por coma; por defecto `http://localhost:4200` |
 | `JWT_SECRET` | Secreto Base64 seguro para firmar tokens |
 | `APP_BOOTSTRAP_ADMIN_ENABLED` | `true` solo durante la inicialización del primer administrador |
 | `APP_BOOTSTRAP_ADMIN_USERNAME` | Nombre inicial del administrador |
@@ -105,6 +106,12 @@ Después de que la primera cuenta se haya creado, desactiva `APP_BOOTSTRAP_ADMIN
 | `POST` | `/api/sales` | Usuario o administrador | Registrar venta |
 
 El cuerpo de venta contiene `items`, una lista de `{ "productId": id, "quantity": cantidad }`. El servidor obtiene el usuario del JWT y el precio del producto persistido; no acepta como autoridad el stock, el usuario o el total enviados por el cliente.
+
+## CORS
+
+En desarrollo, el navegador llama a Angular en `http://localhost:4200` y el proxy de Angular reenvía `/api` al backend; no se necesita habilitar otros orígenes. El backend acepta por defecto únicamente `http://localhost:4200`, y la lista puede cambiarse con `APP_CORS_ALLOWED_ORIGINS`, separando los orígenes exactos por coma (por ejemplo, `https://app.example.com,https://staging.example.com`). No incluyas rutas ni comodines.
+
+CORS aplica únicamente a `/api/**`, permite los métodos HTTP usados por la API y los headers `Authorization`, `Content-Type` y `Accept`. Las credenciales cross-origin están deshabilitadas porque la autenticación usa JWT en el header y no cookies. En producción, si frontend y API están bajo el mismo origen, sirve `/api` mediante reverse proxy y conserva CORS cerrado; si tienen orígenes distintos, configura solo el origen del frontend.
 
 ## Integridad y concurrencia del stock
 
