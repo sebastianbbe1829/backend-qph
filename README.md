@@ -58,7 +58,7 @@ El esquema es idempotente para esta instalación: se crean las tablas que falten
 
 ## Configuración de conexión y secretos
 
-Los scripts usan por defecto el endpoint Neon de este proyecto. El lanzador pide la contraseña de PostgreSQL de forma interactiva; no la escribas en los archivos `.bat`, `.ps1` ni en Git. Puedes establecer `DB_URL` y `DB_USERNAME` antes de iniciar si necesitas otra base o usuario.
+Los scripts usan por defecto el endpoint Neon de este proyecto. El lanzador pide la contraseña de PostgreSQL de forma interactiva; no la escribas en los archivos `.bat`, `.ps1` ni en Git. Puedes establecer `DB_URL` y `DB_USERNAME` antes de iniciar si necesitas otra base o usuario. HikariCP recicla sus conexiones cada cuatro minutos y comprueba las conexiones ociosas cada minuto para evitar reutilizar conexiones cerradas por el pooler de Neon.
 
 Si `JWT_SECRET` no está definido, el lanzador genera una clave temporal. Para conservar sesiones JWT después de reiniciar, define una clave segura y persistente como variable de entorno. La contraseña nueva de Neon se ingresa en el prompt del script; no uses la credencial que fue expuesta previamente.
 
