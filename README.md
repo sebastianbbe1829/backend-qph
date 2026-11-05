@@ -126,16 +126,6 @@ CORS aplica únicamente a `/api/**`, permite los métodos HTTP usados por la API
 
 El frontend solo pre-valida cantidades para dar una mejor experiencia; la base de datos y el backend son la autoridad. Los `CHECK` protegen las invariantes básicas incluso ante escrituras fuera de la API. El bloqueo pesimista serializa ventas concurrentes del mismo producto.
 
-## Mejoras recomendadas
-
-1. Mantener el stock solo en operaciones del dominio de inventario; hoy el formulario de edición puede sobrescribirlo. En una siguiente iteración, separar datos de catálogo y ajustes de existencias, y registrar movimientos de inventario si se requiere auditoría.
-2. Añadir pruebas de integración de venta con PostgreSQL (por ejemplo, Testcontainers) para validar bloqueo y constraints específicos del motor. Las pruebas actuales cubren concurrencia con H2 y rollback transaccional, pero no sustituyen esa verificación en PostgreSQL.
-3. Las migraciones de esquema quedan fuera del alcance actual. Evaluar Flyway o Liquibase si se incorporan cambios incrementales del modelo; no usar `ddl-auto=update` en producción.
-4. Añadir filtros adicionales y consultas de historial de ventas según las necesidades del negocio.
-5. Centralizar secretos y configuración por entorno; validar que JWT tenga un secreto no vacío y suficientemente seguro fuera de pruebas.
-6. Usar `Instant`/`TIMESTAMPTZ` para fechas si se requiere operación en varias zonas horarias; acordar el formato de API antes del cambio.
-7. Eliminar RabbitMQ del stack actual: no había productores ni consumidores implementados, por lo que la dependencia no entregaba funcionalidad. Incorporar mensajería solo con un caso de uso y estrategia de consistencia definidos, como transactional outbox.
-
 ## Pruebas
 
 ```powershell
