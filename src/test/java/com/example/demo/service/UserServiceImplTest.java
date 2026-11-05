@@ -5,6 +5,9 @@ import com.example.demo.dto.UserResponseDTO;
 import com.example.demo.entity.AppUser;
 import com.example.demo.repository.UserRepository;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,19 +25,19 @@ class UserServiceImplTest {
         UserRepository userRepository = mock(UserRepository.class);
         UserServiceImpl userService = new UserServiceImpl(
                 userRepository, new BCryptPasswordEncoder());
-        when(userRepository.findAll()).thenReturn(java.util.List.of(
+        when(userRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(java.util.List.of(
                 AppUser.builder().id(1L).username("admin")
                         .passwordHash("$2a$hash").role("ADMIN").build(),
                 AppUser.builder().id(2L).username("seller")
-                        .passwordHash("$2a$hash").role("USER").build()));
+                        .passwordHash("$2a$hash").role("USER").build())));
 
-        var users = userService.findAll();
+        var users = userService.findAll(PageRequest.of(0, 20), "");
 
-        assertEquals(2, users.size());
-        assertEquals("admin", users.get(0).getUsername());
-        assertEquals("ADMIN", users.get(0).getRole());
-        assertFalse(users.get(0).toString().contains("passwordHash"));
-        assertFalse(users.get(0).toString().contains("$2a$hash"));
+        assertEquals(2, users.getTotalElements());
+        assertEquals("admin", users.getContent().get(0).getUsername());
+        assertEquals("ADMIN", users.getContent().get(0).getRole());
+        assertFalse(users.getContent().get(0).toString().contains("passwordHash"));
+        assertFalse(users.getContent().get(0).toString().contains("$2a$hash"));
     }
 
     @Test

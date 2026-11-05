@@ -64,7 +64,7 @@ Si `JWT_SECRET` no está definido, el lanzador genera una clave temporal. Para c
 
 Si la espera se agota, deja abiertas las consolas y revisa el error original que muestran. Angular se inicia en `localhost:4200` y el lanzador comprueba esa misma dirección antes de abrir `/login`.
 
-La aplicación también puede configurarse directamente con estas variables de entorno:
+La aplicación también puede configurarse directamente con estas variables de entorno, definidas en `src/main/resources/application.yml`:
 
 | Variable | Uso |
 |---|---|
@@ -76,6 +76,7 @@ La aplicación también puede configurarse directamente con estas variables de e
 | `APP_BOOTSTRAP_ADMIN_ENABLED` | `true` solo durante la inicialización del primer administrador |
 | `APP_BOOTSTRAP_ADMIN_USERNAME` | Nombre inicial del administrador |
 | `APP_BOOTSTRAP_ADMIN_PASSWORD` | Contraseña inicial; mínimo 8 y máximo 72 caracteres |
+| `LOG_FILE_PATH` | Ruta del archivo de logs; por defecto `logs/prueba-tecnica.log` relativa al directorio desde donde inicia el backend |
 
 En PowerShell, ejecuta la aplicación con:
 
@@ -84,6 +85,8 @@ En PowerShell, ejecuta la aplicación con:
 ```
 
 Después de que la primera cuenta se haya creado, desactiva `APP_BOOTSTRAP_ADMIN_ENABLED` y elimina las variables de credenciales de inicialización. El proceso de bootstrap falla de forma explícita si la tabla ya contiene cuentas: no reemplaza ni modifica usuarios existentes. No guardes estas variables en el repositorio.
+
+Los logs se escriben en consola y en archivo, con rotación diaria y retención de 365 días. Por defecto, el archivo queda en `logs/prueba-tecnica.log` bajo el directorio de trabajo del backend. En el servidor configura `LOG_FILE_PATH` con una ruta absoluta en un directorio persistente y asegúrate de que la cuenta que ejecuta la aplicación tenga permisos de escritura.
 
 ## API
 
@@ -101,6 +104,16 @@ Después de que la primera cuenta se haya creado, desactiva `APP_BOOTSTRAP_ADMIN
 
 El cuerpo de venta contiene `items`, una lista de `{ "productId": id, "quantity": cantidad }`. El servidor obtiene el usuario del JWT y el precio del producto persistido; no acepta como autoridad el stock, el usuario o el total enviados por el cliente.
 
+Los endpoints `GET /api/products` y `GET /api/users` devuelven resultados paginados. Aceptan `page` (base cero, por defecto `0`), `size` (por defecto `20`, máximo `100`), `sort`, `direction` (`ASC` o `DESC`) y `search`. Productos permiten ordenar por `id`, `nombre`, `precio` o `stock`; usuarios por `id`, `username` o `role`. La respuesta contiene `content`, `page`, `size`, `totalElements`, `totalPages`, `first` y `last`. La búsqueda de productos coincide con el nombre; la de usuarios, con nombre de usuario o rol. Por ejemplo: `/api/products?page=0&size=20&sort=nombre&direction=ASC&search=teclado`.
+
+Cada solicitud a `/api/**` recibe un `X-Request-Id` generado por el servidor. El log de acceso registra el identificador, método, ruta sin query string, estado HTTP y duración; no registra headers de autorización, credenciales ni cuerpos. Los errores internos incluyen ese mismo identificador en la respuesta para poder correlacionarlos con el log del servidor.
+
+Los endpoints `GET /api/products` y `GET /api/users` devuelven resultados paginados. Aceptan `page` (base cero, por defecto `0`), `size` (por defecto `20`, máximo `100`), `sort`, `direction` (`ASC` o `DESC`) y `search`. Productos permiten ordenar por `id`, `nombre`, `precio` o `stock`; usuarios por `id`, `username` o `role`. La respuesta contiene `content`, `page`, `size`, `totalElements`, `totalPages`, `first` y `last`. La búsqueda de productos coincide con el nombre; la de usuarios, con nombre de usuario o rol. Por ejemplo: `/api/products?page=0&size=20&sort=nombre&direction=ASC&search=teclado`.
+
+## Swagger / OpenAPI
+
+Con el backend en ejecución, la documentación interactiva está disponible en `http://localhost:8080/swagger-ui/index.html` y el documento OpenAPI en `http://localhost:8080/v3/api-docs`. La interfaz y el documento son accesibles sin iniciar sesión; las operaciones de la API mantienen sus permisos actuales. Usa **Authorize** en Swagger UI e ingresa el JWT para probar rutas protegidas. El token se obtiene con `POST /api/auth/login`.
+
 ## CORS
 
 En desarrollo, el navegador llama a Angular en `http://localhost:4200` y el proxy de Angular reenvía `/api` al backend; no se necesita habilitar otros orígenes. El backend acepta por defecto únicamente `http://localhost:4200`, y la lista puede cambiarse con `APP_CORS_ALLOWED_ORIGINS`, separando los orígenes exactos por coma (por ejemplo, `https://app.example.com,https://staging.example.com`). No incluyas rutas ni comodines.
@@ -116,9 +129,9 @@ El frontend solo pre-valida cantidades para dar una mejor experiencia; la base d
 ## Mejoras recomendadas
 
 1. Mantener el stock solo en operaciones del dominio de inventario; hoy el formulario de edición puede sobrescribirlo. En una siguiente iteración, separar datos de catálogo y ajustes de existencias, y registrar movimientos de inventario si se requiere auditoría.
-2. Añadir pruebas de integración de venta con PostgreSQL (por ejemplo, Testcontainers), incluyendo dos ventas concurrentes y rollback en una venta de varios productos. Las pruebas actuales unitarias no demuestran el comportamiento real de bloqueo/constraints del motor.
-3. Añadir versionado/migraciones de esquema con Flyway o Liquibase cuando el modelo deje de ser exclusivamente de instalación limpia; no usar `ddl-auto=update` en producción.
-4. Añadir paginación y filtros del lado servidor si el catálogo crece, además de consultas de historial de ventas.
+2. Añadir pruebas de integración de venta con PostgreSQL (por ejemplo, Testcontainers) para validar bloqueo y constraints específicos del motor. Las pruebas actuales cubren concurrencia con H2 y rollback transaccional, pero no sustituyen esa verificación en PostgreSQL.
+3. Las migraciones de esquema quedan fuera del alcance actual. Evaluar Flyway o Liquibase si se incorporan cambios incrementales del modelo; no usar `ddl-auto=update` en producción.
+4. Añadir filtros adicionales y consultas de historial de ventas según las necesidades del negocio.
 5. Centralizar secretos y configuración por entorno; validar que JWT tenga un secreto no vacío y suficientemente seguro fuera de pruebas.
 6. Usar `Instant`/`TIMESTAMPTZ` para fechas si se requiere operación en varias zonas horarias; acordar el formato de API antes del cambio.
 7. Eliminar RabbitMQ del stack actual: no había productores ni consumidores implementados, por lo que la dependencia no entregaba funcionalidad. Incorporar mensajería solo con un caso de uso y estrategia de consistencia definidos, como transactional outbox.

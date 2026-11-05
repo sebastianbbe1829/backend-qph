@@ -5,11 +5,10 @@ import com.example.demo.entity.Product;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,11 +19,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductDTO> findAll() {
-        return repository.findAll()
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+    public Page<ProductDTO> findAll(Pageable pageable, String search) {
+        String normalizedSearch = search == null ? "" : search.trim();
+        Page<Product> products = normalizedSearch.isEmpty()
+                ? repository.findAll(pageable)
+                : repository.findByNombreContainingIgnoreCase(normalizedSearch, pageable);
+        return products.map(this::toDTO);
     }
 
     @Override
